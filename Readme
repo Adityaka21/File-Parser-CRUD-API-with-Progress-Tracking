@@ -1,0 +1,169 @@
+# File Parser CRUD API with Progress Tracking
+
+A backend application for uploading, parsing, and retrieving files (CSV, TXT, images), with asynchronous progress tracking. Supports large file uploads (up to configurable limits) and paginated retrieval of parsed content.
+
+---
+
+## Table of Contents
+
+- [Features](#features)  
+- [Tech Stack](#tech-stack)  
+- [Setup Instructions](#setup-instructions)  
+- [API Documentation](#api-documentation)  
+  - [Upload File](#upload-file)  
+  - [Get Upload Progress](#get-upload-progress)  
+  - [Get File Content](#get-file-content)  
+  - [List Files](#list-files)  
+  - [Delete File](#delete-file)  
+- [File Size Limits](#file-size-limits)  
+- [Notes](#notes)  
+
+---
+
+## Features
+
+- Upload files (CSV, TXT, JPEG, PNG).  
+- Asynchronous parsing of CSV/TXT files to prevent blocking.  
+- Real-time progress tracking for uploads and parsing.  
+- Retrieve parsed file content with pagination.  
+- Full CRUD functionality for uploaded files.  
+
+---
+
+## Tech Stack
+
+- **Backend:** Node.js, Express.js  
+- **Database:** MongoDB  
+- **File Upload:** Multer  
+- **CSV Parsing:** csv-parser  
+- **UUID Generation:** uuid  
+- **In-memory Progress Tracking:** Redis or memory  
+
+---
+
+## Setup Instructions
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/yourusername/file-parser-crud.git
+cd file-parser-crud
+
+
+Install dependencies:
+
+npm install
+
+
+API Documentation
+Upload File
+
+Endpoint: POST /api/files/upload
+Content-Type: multipart/form-data
+Form Field: file
+
+Behavior:
+
+Stores file metadata and content.
+
+Asynchronously parses CSV/TXT files.
+
+Tracks upload and parsing progress.
+
+Sample Response:
+
+{
+  "message": "File uploaded and processing started",
+  "file": {
+    "fileId": "f837dd41-a100-4bb7-854b-91e7fca61746",
+    "originalName": "data.csv",
+    "mimeType": "text/csv",
+    "size": 12345,
+    "status": "processing",
+    "progress": 0,
+    "createdAt": "2025-08-21T07:52:55.659Z"
+  }
+}
+
+Get Upload Progress
+
+Endpoint: GET /api/files/:fileId/progress
+
+Sample Response:
+
+{
+  "file_id": "f837dd41-a100-4bb7-854b-91e7fca61746",
+  "status": "processing",
+  "progress": 42
+}
+
+
+Behavior: Returns current progress of upload/parsing. When done:
+
+{
+  "file_id": "f837dd41-a100-4bb7-854b-91e7fca61746",
+  "status": "ready",
+  "progress": 100
+}
+
+Get File Content
+
+Endpoint: GET /api/files/:fileId
+Query Parameters:
+
+page (default: 0)
+
+limit (default: 1000)
+
+Sample Response:
+
+{
+  "fileId": "f837dd41-a100-4bb7-854b-91e7fca61746",
+  "rows": [
+    { "Name": "John", "Age": "30" },
+    { "Name": "Jane", "Age": "25" }
+  ],
+  "page": 0,
+  "limit": 1000
+}
+
+
+Behavior: Returns parsed file content in paginated form. If still processing:
+
+{
+  "message": "File upload or processing in progress. Please try again later."
+}
+
+List Files
+
+Endpoint: GET /api/files
+
+Sample Response:
+
+[
+  {
+    "fileId": "f837dd41-a100-4bb7-854b-91e7fca61746",
+    "originalName": "data.csv",
+    "mimeType": "text/csv",
+    "size": 12345,
+    "status": "ready",
+    "progress": 100,
+    "createdAt": "2025-08-21T07:52:55.659Z"
+  }
+]
+
+Delete File
+
+Endpoint: DELETE /api/files/:fileId
+
+Sample Response:
+
+{
+  "message": "File deleted successfully"
+}
+
+File Size Limits
+
+Maximum File Size: Configurable via Multer limits.fileSize. Example: 5 GB → 5 * 1024 * 1024 * 1024.
+
+Minimum File Size: Can be enforced using custom middleware or file validation.
