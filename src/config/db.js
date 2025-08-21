@@ -2,10 +2,7 @@ const moongoose = require('mongoose');
 
 const connectDb = async () => {
   try {
-    await moongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await moongoose.connect(process.env.MONGO_URI);
     console.log('MongoDB connected successfully');
   } catch (error) {
     console.error('MongoDB connection failed:', error.message);

@@ -1,16 +1,16 @@
-const redis = require('../config/redis');
+// services/progressService.js
+const progressMap = new Map();
 
-const setProgress = async (fileId, status , progress) => {
-    await redis.hset(`progress:${fileId}`, { status, progress });
-};
+function setProgress(fileId, progress, status = "uploading") {
+  progressMap.set(fileId, { progress, status });
+}
 
-const getProgress = async (fileId) => {
-    const data = await redis.hgetall(`progress:${fileId}`);
-    return {
-        file_Id: fileId,
-        status: data.status || 'unknown', 
-        progress: Number(data.progress) || 0
-    };
-};
+function getProgress(fileId) {
+  return progressMap.get(fileId) || { progress: 0, status: "pending" };
+}
 
-module.exports = { setProgress, getProgress };
+function clearProgress(fileId) {
+  progressMap.delete(fileId);
+}
+
+module.exports = { setProgress, getProgress, clearProgress };
