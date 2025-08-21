@@ -22,19 +22,19 @@ exports.uploadFile = async (req, res) => {
         let rows = [];
         let chunkIndex = 0;
 
-        parseCSV(stream, (row, count) => {
-            rows.push(row);
-            if (rows.length == 100 ) {
-                await ParsedData.create({ fileId, chunkIndex, rows });
-                rows = [];
-                chunkIndex++;
-                await setProgress(fileId, 'processing', Math.min(99, Math.floor((count / req.file.size) * 100)));
-            }
-    }, async() => {
-            if (rows.length) await ParsedData.create({ fileId, chunkIndex, rows });
-            await File.findOneAndUpdate({ fileId }, { status: 'ready', progress: 100 });
-            await setProgress(fileId, 'ready', 100);
-        });
+    parseCSV(stream, async (row, count) => {
+        rows.push(row);
+        if (rows.length == 100 ) {
+            await ParsedData.create({ fileId, chunkIndex, rows });
+            rows = [];
+            chunkIndex++;
+            await setProgress(fileId, 'processing', Math.min(99, Math.floor((count / req.file.size) * 100)));
+        }
+    }, async () => {
+        if (rows.length) await ParsedData.create({ fileId, chunkIndex, rows });
+        await File.findOneAndUpdate({ fileId }, { status: 'ready', progress: 100 });
+        await setProgress(fileId, 'ready', 100);
+    });
 
     res.json({ fileId, status: 'processing', progress: 0 });
     } catch (error) {
